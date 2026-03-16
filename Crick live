@@ -1,0 +1,515 @@
+<!DOCTYPE html>  <html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">  
+    <title>CoverPoint · live cricket scores</title>  
+    <style>  
+        * {  
+            margin: 0;  
+            padding: 0;  
+            box-sizing: border-box;  
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;  
+        }  body {  
+        background: #0a0c10;  
+        color: #e8edf2;  
+        line-height: 1.5;  
+        min-height: 100vh;  
+        display: flex;  
+        flex-direction: column;  
+    }  
+
+    /* sticky header */  
+    .header {  
+        position: sticky;  
+        top: 0;  
+        z-index: 30;  
+        background: #101318;  
+        backdrop-filter: blur(6px);  
+        border-bottom: 1px solid #2a2f38;  
+        display: flex;  
+        align-items: center;  
+        justify-content: space-between;  
+        padding: 0.9rem 1.2rem;  
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5);  
+    }  
+
+    .logo-area {  
+        display: flex;  
+        align-items: center;  
+        gap: 1rem;  
+    }  
+
+    .hamburger {  
+        background: transparent;  
+        border: none;  
+        color: #34c759;  
+        font-size: 2rem;  
+        line-height: 1;  
+        cursor: pointer;  
+        width: 44px;  
+        height: 44px;  
+        display: flex;  
+        align-items: center;  
+        justify-content: center;  
+        border-radius: 12px;  
+        transition: background 0.2s;  
+    }  
+    .hamburger:hover { background: #262b34; }  
+
+    .site-name {  
+        font-size: 1.6rem;  
+        font-weight: 700;  
+        letter-spacing: -0.5px;  
+        background: linear-gradient(145deg, #a6ffa6, #2ecc71);  
+        -webkit-background-clip: text;  
+        background-clip: text;  
+        color: transparent;  
+    }  
+
+    .social-mini {  
+        display: flex;  
+        gap: 0.6rem;  
+    }  
+    .social-mini a {  
+        color: #ccc;  
+        text-decoration: none;  
+        font-size: 1.3rem;  
+    }  
+
+    /* overlay & sidebar */  
+    .sidebar-overlay {  
+        position: fixed;  
+        top: 0;  
+        left: 0;  
+        width: 100vw;  
+        height: 100vh;  
+        background: rgba(0,0,0,0.65);  
+        backdrop-filter: blur(3px);  
+        z-index: 100;  
+        display: none;  
+        transition: 0.2s;  
+    }  
+    .sidebar {  
+        position: fixed;  
+        top: 0;  
+        left: -300px;  
+        width: 280px;  
+        height: 100vh;  
+        background: #14181f;  
+        border-right: 1px solid #2d3440;  
+        padding: 2rem 0 2rem 1.8rem;  
+        z-index: 110;  
+        transition: left 0.25s ease-out;  
+        box-shadow: 6px 0 20px #00000080;  
+        overflow-y: auto;  
+    }  
+    .sidebar.open { left: 0; }  
+    .sidebar-overlay.active { display: block; }  
+
+    .sidebar-menu {  
+        list-style: none;  
+    }  
+    .sidebar-menu li {  
+        margin: 1.4rem 0;  
+    }  
+    .sidebar-menu a {  
+        color: #cfd9e6;  
+        text-decoration: none;  
+        font-size: 1.2rem;  
+        font-weight: 500;  
+        display: inline-block;  
+        padding: 0.4rem 1rem 0.4rem 0;  
+        border-bottom: 2px solid transparent;  
+        transition: 0.15s;  
+    }  
+    .sidebar-menu a:hover {  
+        color: #5ced73;  
+        border-bottom-color: #2ecc71;  
+    }  
+
+    /* main container */  
+    .main-wrapper {  
+        max-width: 1200px;  
+        margin: 0 auto;  
+        width: 100%;  
+        flex: 1;  
+        padding: 1rem 1rem 2rem;  
+    }  
+
+    /* ad placeholders (AdSense friendly) */  
+    .ad-banner {  
+        background: #1e232b;  
+        border: 1px dashed #4a5c6e;  
+        border-radius: 16px;  
+        padding: 1.2rem;  
+        margin: 1.5rem 0;  
+        text-align: center;  
+        color: #a0b3cc;  
+        font-size: 1rem;  
+        font-weight: 400;  
+        letter-spacing: 0.5px;  
+        box-shadow: inset 0 2px 6px #00000040;  
+    }  
+    .ad-banner::before {  
+        content: "ⓘ ad";  
+        display: block;  
+        font-size: 0.75rem;  
+        color: #6a7c94;  
+        margin-bottom: 0.2rem;  
+        text-transform: uppercase;  
+    }  
+
+    /* section headers */  
+    .section-header {  
+        font-size: 1.8rem;  
+        font-weight: 700;  
+        margin: 1.5rem 0 1.2rem 0;  
+        border-left: 7px solid #34c759;  
+        padding-left: 1rem;  
+        background: linear-gradient(to right, #1f262e, transparent);  
+    }  
+    .live-badge {  
+        display: inline-block;  
+        background: #e03a3a;  
+        color: white;  
+        font-weight: 700;  
+        font-size: 0.9rem;  
+        padding: 0.2rem 0.9rem;  
+        border-radius: 30px;  
+        margin-left: 1rem;  
+        vertical-align: middle;  
+        box-shadow: 0 0 10px #ff4d4d;  
+        animation: pulseGlow 1.7s infinite;  
+    }  
+    @keyframes pulseGlow { 0% { opacity: 1; } 50% { opacity: 0.7; } }  
+
+    /* match cards grid */  
+    .match-grid {  
+        display: grid;  
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));  
+        gap: 1.3rem;  
+    }  
+
+    /* card base */  
+    .match-card {  
+        background: #171c24;  
+        border-radius: 28px;  
+        padding: 1.4rem 1rem 1rem 1rem;  
+        border: 1px solid #2d3846;  
+        box-shadow: 0 8px 0 #0e1217;  
+        transition: transform 0.15s, box-shadow 0.2s;  
+    }  
+    .match-card:hover { transform: translateY(-3px); box-shadow: 0 12px 0 #0b0e12; }  
+
+    .completed-card {  
+        opacity: 0.75;  
+        filter: grayscale(0.3);  
+        background: #131821;  
+    }  
+
+    /* flags & teams */  
+    .team-row {  
+        display: flex;  
+        align-items: center;  
+        justify-content: space-between;  
+        margin: 0.6rem 0;  
+    }  
+    .team {  
+        display: flex;  
+        align-items: center;  
+        gap: 0.5rem;  
+        font-weight: 600;  
+        font-size: 1.1rem;  
+    }  
+    .flag {  
+        font-size: 2rem;  
+        filter: drop-shadow(0 2px 4px black);  
+    }  
+
+    .match-meta {  
+        color: #9eaaba;  
+        font-size: 0.9rem;  
+        border-top: 1px dashed #2f3b48;  
+        margin-top: 0.8rem;  
+        padding-top: 0.8rem;  
+        display: flex;  
+        justify-content: space-between;  
+    }  
+
+    .score-line {  
+        background: #10161e;  
+        border-radius: 24px;  
+        padding: 0.7rem 1rem;  
+        margin: 0.7rem 0;  
+    }  
+
+    .batting-highlight {  
+        color: #ffd966;  
+        font-weight: 700;  
+        border-left: 4px solid #2ecc71;  
+        padding-left: 0.5rem;  
+    }  
+    .bowler {  
+        font-size: 0.9rem;  
+        color: #b0c2d9;  
+    }  
+    .run-rate {  
+        font-weight: 600;  
+        color: #ffb347;  
+    }  
+    .live-indicator {  
+        color: #ff4d4d;  
+        font-weight: 800;  
+        display: inline-block;  
+        animation: blink 1.2s step-end infinite;  
+    }  
+    @keyframes blink { 0%,100%{ opacity:1 } 50%{ opacity:0.4 } }  
+
+    .last-updated {  
+        font-size: 0.7rem;  
+        color: #667c99;  
+        text-align: right;  
+        margin-top: 0.4rem;  
+    }  
+
+    /* result tag */  
+    .result-badge {  
+        background: #28303b;  
+        padding: 0.3rem 1rem;  
+        border-radius: 30px;  
+        font-size: 0.9rem;  
+        color: #d4e2ff;  
+        text-align: center;  
+    }  
+
+    /* footer social */  
+    .footer-social {  
+        background: #10151c;  
+        border-radius: 40px;  
+        padding: 1rem 1.8rem;  
+        margin: 2.5rem 0 1rem;  
+        display: flex;  
+        flex-wrap: wrap;  
+        align-items: center;  
+        justify-content: center;  
+        gap: 2rem;  
+        border: 1px solid #263040;  
+    }  
+    .footer-social a {  
+        color: #ddd;  
+        text-decoration: none;  
+        font-size: 1.2rem;  
+        display: flex;  
+        align-items: center;  
+        gap: 6px;  
+    }  
+    .footer-social a:hover { color: #62ed7c; }  
+
+    /* dynamic pages (legal) */  
+    .legal-page {  
+        background: #131a24;  
+        border-radius: 28px;  
+        padding: 2rem 2rem 2rem 2rem;  
+        margin: 2rem 0;  
+        border: 1px solid #2f4053;  
+        display: none;  
+    }  
+    .legal-page.active-page {  
+        display: block;  
+    }  
+    .legal-page h2 { color: #91ffa0; margin-bottom: 1rem; }  
+    .legal-page p { margin: 1rem 0; color: #cbd5e6; }  
+
+    /* mobile tight */  
+    @media (max-width: 500px) {  
+        .site-name { font-size: 1.3rem; }  
+        .match-grid { grid-template-columns: 1fr; }  
+        .social-mini { display: none; }  
+    }  
+</style>
+
+</head>  
+<body>  
+    <!-- sticky header -->  
+    <header class="header">  
+        <div class="logo-area">  
+            <button class="hamburger" id="hamburgerBtn" aria-label="menu">☰</button>  
+            <span class="site-name">CoverPoint █</span>  
+        </div>  
+        <div class="social-mini">  
+            <a href="#" aria-label="YouTube">📺</a>  
+            <a href="#" aria-label="Instagram">📷</a>  
+            <a href="https://t.me/smartaiking" target="_blank" aria-label="Telegram">✈️</a>  
+        </div>  
+    </header>  <!-- sidebar + overlay -->  
+<div class="sidebar-overlay" id="sidebarOverlay"></div>  
+<aside class="sidebar" id="sidebar">  
+    <ul class="sidebar-menu">  
+        <li><a href="#" data-page="home">🏠 Home</a></li>  
+        <li><a href="#" data-page="upcoming">📅 Upcoming Matches</a></li>  
+        <li><a href="#" data-page="live">⚡ Live Matches</a></li>  
+        <li><a href="#" data-page="completed">✅ Completed</a></li>  
+        <li><a href="#" data-page="about">📌 About Us</a></li>  
+        <li><a href="#" data-page="contact">📞 Contact Us</a></li>  
+        <li><a href="#" data-page="privacy">🔏 Privacy Policy</a></li>  
+        <li><a href="#" data-page="terms">📄 Terms & Conditions</a></li>  
+        <li><a href="#" data-page="disclaimer">⚠️ Disclaimer</a></li>  
+    </ul>  
+</aside>  
+
+<!-- main content -->  
+<main class="main-wrapper" id="mainContent">  
+    <!-- top ad -->  
+    <div class="ad-banner">Responsive Ad · 728x90 (placeholder)</div>  
+
+    <!-- dynamic sections container (home) -->  
+    <div id="homeView">  
+        <!-- upcoming matches first -->  
+        <section>  
+            <h2 class="section-header">📌 Upcoming clashes</h2>  
+            <div class="match-grid" id="upcomingGrid"></div>  
+        </section>  
+
+        <!-- in-content ad -->  
+        <div class="ad-banner">In‑content ad · 300x250 (demo)</div>  
+
+        <!-- live matches second (highlight) -->  
+        <section>  
+            <h2 class="section-header">🏏 LIVE NOW <span class="live-badge">LIVE</span></h2>  
+            <div class="match-grid" id="liveGrid"></div>  
+            <div class="last-updated" id="liveUpdateStamp">updates every 30s</div>  
+        </section>  
+
+        <!-- completed matches third -->  
+        <section>  
+            <h2 class="section-header">🏁 Completed</h2>  
+            <div class="match-grid" id="completedGrid"></div>  
+        </section>  
+    </div>  
+
+    <!-- hidden legal pages (will be shown via js) -->  
+    <div id="legalPagesContainer">  
+        <div class="legal-page" id="page-privacy">  
+            <h2>Privacy Policy</h2>  
+            <p>We use cookies to personalise content and analyse traffic. Google AdSense may use cookies to serve relevant ads. Third-party vendors, including Google, use cookies to serve ads based on prior visits. You may disable cookies via browser settings. Your data is processed in accordance with data protection laws. This is demo data for AdSense-friendly demo.</p>  
+        </div>  
+        <div class="legal-page" id="page-terms">  
+            <h2>Terms & Conditions</h2>  
+            <p>All content is for informational purpose only. Scores are mock/demo and may not reflect real matches. We do not guarantee accuracy. By using this site you agree that we are not liable for any decisions made based on this demo data. The website is not affiliated with any official cricket board.</p>  
+        </div>  
+        <div class="legal-page" id="page-disclaimer">  
+            <h2>Disclaimer</h2>  
+            <p>CoverPoint is a demo cricket interface. We are not affiliated with ICC, BCCI, IPL or any tournament. All scores are simulated and for demonstration only. No real-time data is used. This project is built to be AdSense compliant and for portfolio purposes.</p>  
+        </div>  
+        <div class="legal-page" id="page-about"><h2>About Us</h2><p>We are a passionate cricket UI demo. For education only.</p></div>  
+        <div class="legal-page" id="page-contact"><h2>Contact</h2><p>✉️ demo@coverpoint.example (not a real address)</p></div>  
+    </div>  
+
+    <!-- footer ad + social -->  
+    <div class="ad-banner">Footer banner · 728x90 (ad placeholder)</div>  
+
+    <div class="footer-social">  
+        <a href="#" target="_blank">📺 YouTube</a>  
+        <a href="#" target="_blank">📸 Instagram</a>  
+        <a href="https://t.me/smartaiking" target="_blank">✈️ Telegram</a>  
+        <span style="color:#586b7f;">© demo only</span>  
+    </div>  
+</main>  
+
+<script>  
+    (function() {  
+        // ----- MOCK DATA (AdSense safe, no external API) -----  
+        const flags = { ind: '🇮🇳', aus: '🇦🇺', eng: '🏴', sa: '🇿🇦', nz: '🇳🇿', pak: '🇵🇰', sl: '🇱🇰', wi: '🏝️' };  
+
+        // upcoming matches  
+        const upcomingMatches = [  
+            { teamA: 'India', teamB: 'Australia', flagA: flags.ind, flagB: flags.aus, date: '2025-04-12 15:30', tournament: 'IPL 2025' },  
+            { teamA: 'England', teamB: 'New Zealand', flagA: flags.eng, flagB: flags.nz, date: '2025-04-13 10:00', tournament: 'ODI series' },  
+            { teamA: 'South Africa', teamB: 'Pakistan', flagA: flags.sa, flagB: flags.pak, date: '2025-04-14 19:00', tournament: 'T20I' },  
+            { teamA: 'West Indies', teamB: 'Sri Lanka', flagA: flags.wi, flagB: flags.sl, date: '2025-04-15 20:30', tournament: 'Test' },  
+        ];  
+
+        // live matches (will be updated)  
+        let liveMatches = [  
+            { teamA: 'India', teamB: 'Australia', flagA: flags.ind, flagB: flags.aus, batting: 'India', bowling: 'Australia', runsA: 158, wktsA: 4, oversA: 17.3, runsB: 0, wktsB: 0, oversB: 0.0, crr: 9.03, lastUpdate: new Date() },  
+            { teamA: 'England', teamB: 'South Africa', flagA: flags.eng, flagB: flags.sa, batting: 'England', bowling: 'South Africa', runsA: 203, wktsA: 6, oversA: 19.2, runsB: 0, wktsB: 0, oversB: 0.0, crr: 10.5, lastUpdate: new Date() },  
+            { teamA: 'NZ', teamB: 'SL', flagA: flags.nz, flagB: flags.sl, batting: 'NZ', bowling: 'SL', runsA: 112, wktsA: 2, oversA: 14.0, runsB: 0, wktsB: 0, oversB: 0.0, crr: 8.0, lastUpdate: new Date() }  
+        ];  
+
+        // completed matches  
+        const completedMatches = [  
+            { teamA: 'Australia', teamB: 'England', flagA: flags.aus, flagB: flags.eng, scoreA: '245/8 (50)', scoreB: '210 (44)', result: 'Australia won by 35 runs', tournament: 'World Cup' },  
+            { teamA: 'Pakistan', teamB: 'India', flagA: flags.pak, flagB: flags.ind, scoreA: '167 (20)', scoreB: '168/4 (18.2)', result: 'India won by 6 wkts', tournament: 'T20 WC' }  
+        ];  
+
+        // render upcoming  
+        function renderUpcoming() {  
+            const container = document.getElementById('upcomingGrid');  
+            if (!container) return;  
+            container.innerHTML = upcomingMatches.map(m => `  
+                <div class="match-card">  
+                    <div class="team-row"><div class="team"><span class="flag">${m.flagA}</span> ${m.teamA}</div><div style="font-weight:bold;">vs</div><div class="team">${m.teamB} <span class="flag">${m.flagB}</span></div></div>  
+                    <div class="match-meta"><span>${m.tournament}</span><span>${m.date}</span></div>  
+                </div>  
+            `).join('');  
+        }  
+
+        // render live (with animated scores)  
+        function renderLive() {  
+            const container = document.getElementById('liveGrid');  
+            if (!container) return;  
+            container.innerHTML = liveMatches.map(m => {  
+                const battingTeam = m.batting === m.teamA ? m.teamA : m.teamB;  
+                const bowlingTeam = m.batting === m.teamA ? m.teamB : m.teamA;  
+                const runs = m.batting === m.teamA ? m.runsA : m.runsB;  
+                const wkts = m.batting === m.teamA ? m.wktsA : m.wktsB;  
+                const overs = m.batting === m.teamA ? m.oversA : m.oversB;  
+                return `  
+                <div class="match-card" style="border-left: 5px solid #2ecc71;">  
+                    <div class="team-row"><div class="team"><span class="flag">${m.flagA}</span> ${m.teamA}</div><span class="live-indicator">● LIVE</span><div class="team">${m.teamB} <span class="flag">${m.flagB}</span></div></div>  
+                    <div class="score-line">  
+                        <div class="batting-highlight">${battingTeam} ▸ ${runs}/${wkts} (${overs} ov)</div>  
+                        <div class="bowler">🎯 ${bowlingTeam} bowling</div>  
+                        <div class="run-rate">CRR: ${m.crr}</div>  
+                    </div>  
+                    <div class="match-meta"><span>🏆 T20</span><span>⏱️ now</span></div>  
+                </div>  
+            `}).join('');  
+            document.getElementById('liveUpdateStamp').innerText = 'last updated: ' + new Date().toLocaleTimeString();  
+        }  
+
+        // render completed  
+        function renderCompleted() {  
+            const container = document.getElementById('completedGrid');  
+            if (!container) return;  
+            container.innerHTML = completedMatches.map(m => `  
+                <div class="match-card completed-card">  
+                    <div class="team-row"><div class="team"><span class="flag">${m.flagA}</span> ${m.teamA}</div><div>🆚</div><div class="team">${m.teamB} <span class="flag">${m.flagB}</span></div></div>  
+                    <div style="display:flex; justify-content:space-between; margin:0.6rem 0;"><span>${m.scoreA}</span><span>${m.scoreB}</span></div>  
+                    <div class="result-badge">${m.result}</div>  
+                    <div class="match-meta"><span>${m.tournament}</span><span>✅ finished</span></div>  
+                </div>  
+            `).join('');  
+        }  
+
+        // live score auto-update every 30 seconds (random realistic increments)  
+        function updateLiveScores() {  
+            liveMatches = liveMatches.map(m => {  
+                const incRuns = Math.floor(Math.random() * 6) + 1;  // 1-6 runs  
+                const incBall = 0.1; // simulate 0.1 over  
+                let newOvers = (m.batting === m.teamA) ? m.oversA + 0.1 : m.oversB + 0.1;  
+                if (newOvers > 20) newOvers = 20;  
+                let newWkts = (Math.random() > 0.7 && ((m.batting === m.teamA && m.wktsA < 10) || (m.batting !== m.teamA && m.wktsB < 10))) ? 1 : 0;  
+                if (m.batting === m.teamA) {  
+                    return { ...m, runsA: m.runsA + incRuns, wktsA: Math.min(10, m.wktsA + newWkts), oversA: Math.round(newOvers * 10) / 10, crr: +( (m.runsA + incRuns) / newOvers ).toFixed(2), lastUpdate: new Date() };  
+                } else {  
+                    return { ...m, runsB: m.runsB + incRuns, wktsB: Math.min(10, m.wktsB + newWkts), oversB: Math.round(newOvers * 10) / 10, crr: +( (m.runsB + incRuns) / newOvers ).toFixed(2), lastUpdate: new Date() };  
+                }  
+            });  
+            renderLive();  
+        }  
+
+        // sidebar toggle  
+        const hamburger = document.getElementById('hamburgerBtn');  
+        const sidebar = document.getElementById('sidebar');  
+        const overlay = document.getElementById('sid
